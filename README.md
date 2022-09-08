@@ -1,4 +1,5 @@
 # typing-bot-py
+![Cover](https://raw.githubusercontent.com/az-droid/Typing-bot/main/covor.png)
 ## 使用しているライブラリ
 py-cord  
 numpy  
