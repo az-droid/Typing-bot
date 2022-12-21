@@ -1,7 +1,6 @@
 import json
 import random
 import re
-import time
 from typing import Tuple
 
 import numpy as numpy
@@ -15,7 +14,6 @@ with open('files/sushida.json', encoding='utf-8') as f:
     sushida_dict = json.load(f)
 
 table = FilterRuleTable.from_file("files/google_ime_default_roman_table.txt")
-ime = GoogleInputIME(table)
 alphabet_regex = re.compile('[ -~]+')
 
 
@@ -39,6 +37,7 @@ class Game:
     def add_player(self, member_id: int):
         self.player_list.append(member_id)
         self.competitors_time[member_id] = []
+        self.competitors_status[member_id] = 'answered'
 
     def remove_player(self, member_id: int):
         self.player_list.remove(member_id)
@@ -49,8 +48,8 @@ class Game:
         self.question_index += 1
         return self.question_list[self.question_index][1]
 
-    def start_answering(self, user_id: int):
-        self.start_time = time.time()
+    def start_answering(self, user_id: int, timestamp: float):
+        self.start_time = timestamp
         self.competitors_status[user_id] = 'answering'
 
     def is_answering(self, user_id: int):
@@ -110,10 +109,12 @@ class Game:
         for user_id in self.player_list:
             average = numpy.average(self.competitors_time[user_id])
             players_average_time[user_id] = average
-            players_not_answered_question_count[user_id] = 10 - len(self.competitors_time[user_id])
+            players_not_answered_question_count[user_id] = 10 - \
+                len(self.competitors_time[user_id])
             if players_not_answered_question_count[user_id] == 0:
                 players_average_time[user_id] = average
-        players_sorted_time = sorted(players_average_time.items(), key=lambda x: x[1])
+        players_sorted_time = sorted(
+            players_average_time.items(), key=lambda x: x[1])
         return players_sorted_time, players_not_answered_question_count
 
 
@@ -132,8 +133,10 @@ def _check_answer(game: Game, user_input: str) -> Tuple[bool, str]:
 
 
 def rome_to_hiragana(input_string):
+    ime = GoogleInputIME(table)
     output = []
     for c in input_string:
         results = ime.input(c)
-        output.append("".join(r.output_rule.output for r in results if r.output_rule))
+        output.append(
+            "".join(r.output_rule.output for r in results if r.output_rule))
     return "".join(output)

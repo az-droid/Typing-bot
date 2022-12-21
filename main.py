@@ -31,8 +31,10 @@ async def help_command(ctx: discord.ApplicationContext):
                                                         "\n問題は寿司打のものを利用しています。",
                           color=discord.Color.green())
     embed.add_field(name="/ゲーム開始", value="ゲームを開始します。", inline=False)
-    embed.add_field(name="/サーバーランキング", value="サーバー内でのランキングを表示します。", inline=False)
-    embed.add_field(name="/グローバルランキング", value="全利用者中のランキングを表示します。", inline=False)
+    embed.add_field(name="/サーバーランキング",
+                    value="サーバー内でのランキングを表示します。", inline=False)
+    embed.add_field(name="/グローバルランキング",
+                    value="全利用者中のランキングを表示します。", inline=False)
     await ctx.respond(embed=embed, ephemeral=True)
 
 
@@ -45,7 +47,8 @@ async def game_start(
         await ctx.respond("進行中のゲームがあります。先にそちらを終了して下さい。")
         return
     word_count = int(word_count)
-    game = Game(guild_id=ctx.guild_id, channel_id=ctx.channel_id, word_count=word_count)
+    game = Game(guild_id=ctx.guild_id,
+                channel_id=ctx.channel_id, word_count=word_count)
     game.add_player(member_id=ctx.author.id)
     game.save()
     view = discord.ui.View(timeout=None)
@@ -63,6 +66,7 @@ async def game_start(
     embed.add_field(name="参加者", value=ctx.author.display_name)
     await ctx.respond(embed=embed, view=view)
     await aggregate_queue.create_queue(ctx.channel_id)
+
 
 @bot.slash_command(name="サーバーランキング", description="このサーバー内でのランキングを表示します。")
 async def guild_ranking(ctx: discord.ApplicationContext):
@@ -109,7 +113,7 @@ async def on_message(message: discord.Message):
     if message.author.bot:
         return  # ボットは無視
     game = games_manager.get_game(channel_id=message.channel.id)
-    if game is None or message.author.id not in game.player_list:
+    if game is None or message.author.id not in game.player_list or not game.is_answering(message.author.id):
         return
     await aggregate_queue.queues[message.channel.id].put(message)
 
