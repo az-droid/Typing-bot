@@ -78,7 +78,7 @@ async def guild_ranking(ctx: discord.ApplicationContext):
         member = ctx.guild.get_member(user_id)
         embed.add_field(name=f"{rank}位 {member.display_name}#{member.discriminator}",
                         value=f"{all_records[user_id]}秒", inline=False)
-    await ctx.interaction.edit_original_message(embed=embed)
+    await ctx.interaction.edit_original_response(embed=embed)
 
 
 @bot.slash_command(name="全体ランキング", description="全サーバー総合でのランキングを表示します。")
@@ -99,7 +99,7 @@ async def global_ranking(ctx: discord.ApplicationContext):
             continue
         embed.add_field(name=f"{rank}位 {user.name}#{user.discriminator if user else ''}",
                         value=f"{all_records[user_id]}秒", inline=False)
-    await ctx.interaction.edit_original_message(embed=embed)
+    await ctx.interaction.edit_original_response(embed=embed)
 
 
 @bot.event
