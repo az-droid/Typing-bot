@@ -2,9 +2,8 @@ import asyncio
 import discord
 from discord.ui import Button
 
-from utils import games_manager
 from classes.game_class import Game
-
+from utils import games_manager, aggregate_queue
 
 class GameJoinButton(Button):
     def __init__(self):
@@ -48,6 +47,7 @@ class GameLeaveButton(Button):
             return
         if len(game.player_list) == 1:
             games_manager.remove_game(game)
+            await aggregate_queue.queues[channel_id].put("end")
             await interaction.response.send_message(f"ゲームを中止しました。", ephemeral=False)
             return
         game.remove_player(user.id)

@@ -8,7 +8,6 @@ import numpy as numpy
 from google_input.filter_rule import FilterRuleTable
 from google_input.ime import GoogleInputIME
 
-from utils import aggregate_queue
 from utils import games_manager
 from utils.rankings import RANKING_WORD_COUNT
 
@@ -32,8 +31,7 @@ class Game:
         self.question_list = generate_question_list(word_count)
         self.question_index = -1
         self.word_count = word_count
-        self.is_ranking_active = True if word_count == RANKING_WORD_COUNT else False
-        aggregate_queue.create_queue(self)
+        self.is_ranking_active = (word_count == RANKING_WORD_COUNT)
 
     def save(self):
         games_manager.save_game(self)

@@ -62,7 +62,7 @@ async def game_start(
     embed.add_field(name="文字数", value=f"{word_count}文字")
     embed.add_field(name="参加者", value=ctx.author.display_name)
     await ctx.respond(embed=embed, view=view)
-
+    await aggregate_queue.create_queue(ctx.channel_id)
 
 @bot.slash_command(name="サーバーランキング", description="このサーバー内でのランキングを表示します。")
 async def guild_ranking(ctx: discord.ApplicationContext):
@@ -108,7 +108,10 @@ async def on_message(message: discord.Message):
         return
     if message.author.bot:
         return  # ボットは無視
-    await aggregate_queue.append(message)
+    game = games_manager.get_game(channel_id=message.channel.id)
+    if game is None or message.author.id not in game.player_list:
+        return
+    await aggregate_queue.queues[message.channel.id].put(message)
 
 try:
     bot.run(envs.TOKEN)

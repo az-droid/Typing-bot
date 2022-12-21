@@ -6,20 +6,18 @@ import discord
 from classes import button_classes
 from utils import games_manager
 
-queued_messages = {}
+queues = {}
 
 
-def create_queue(game):
-    queued_messages[game.channel_id] = []
-
-
-async def append(message: discord.Message):
-    queued_messages[message.channel.id].append(message)
-    if len(queued_messages[message.channel.id]) > 1:
-        return
-    game = games_manager.get_game(message.channel.id)
-    while len(queued_messages[message.channel.id]) > 0:
-        message: discord.Message = queued_messages[game.channel_id].pop(-1)
+async def create_queue(channel_id: int):
+    queues[channel_id] = asyncio.Queue()
+    while True:
+        message = await queues[channel_id].get()
+        game = games_manager.get_game(channel_id=channel_id)
+        if message == "end":
+            break
+        else:
+            message: discord.Message
         # 答え合わせ
         try:
             is_correct, is_last_question = await check_answer(message, game)
@@ -34,10 +32,14 @@ async def append(message: discord.Message):
             if is_last_question:
                 await send_all_aggregated_result(message, game)
                 await games_manager.end_game(channel_id=message.channel.id)
+                break
             # そうでない場合は次の問題に移行
             else:
                 await move_to_next_question(message, game)
 
+
+async def end_queue(channel_id):
+    await queues[channel_id].put("end")
 
 async def check_answer(message: discord.Message, game) -> Tuple[bool, bool]:
     embeds = []
